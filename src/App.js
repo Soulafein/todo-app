@@ -3,29 +3,57 @@ import logo from './logo.svg';
 import './App.css';
 import {TodoForm} from './components/todo/TodoForm'
 import {TodoList} from './components/todo/TodoList'
+import {addTodo, generateId, findById, toggleTodo, updateTodo} from './lib/todoHelpers'
+import {pipe, partial} from './lib/utils'
 
 class App extends Component {
-  constructor() {
-    super()
-    this.state = {
-      todos: [
-        {id: 1, name: 'Start running twice a week', isCompleted: false},
-        {id: 2, name: 'Start hiking at least once a month', isCompleted: false},
-        {id: 3, name: 'Ride on bike 400km per month', isCompleted: false},
-        {id: 4, name: 'Read a book every week', isCompleted: false}
-      ],
-      currentTodo: ''
-    }
-    this.updateCurrentTodo = this.updateCurrentTodo.bind(this)
+  state = {
+    todos: [
+      {id: 1, name: 'Start running twice a week', isCompleted: false},
+      {id: 2, name: 'Start hiking at least once a month', isCompleted: false},
+      {id: 3, name: 'Ride on bike 400km per month', isCompleted: false},
+      {id: 4, name: 'Read a book every week', isCompleted: false}
+    ],
+    currentTodo: ''
   }
 
-  updateCurrentTodo(e) {
+  handleToggle = (id) => {
+    const getUpdatedTodos = pipe(findById, toggleTodo, partial(updateTodo, this.state.todos))
+    const updatedTodos = getUpdatedTodos(id, this.state.todos)
+    this.setState({todos: updatedTodos})
+  }
+
+  submitCurrentTodo = (e) => {
+    e.preventDefault()
+    const newId = generateId()
+    const newTodo = {
+      id: newId,
+      name: this.state.currentTodo,
+      isCompleted: false
+    }
+    const updatedTodos = addTodo(this.state.todos, newTodo)
+    this.setState({
+      todos: updatedTodos,
+      currentTodo: '',
+      errorMessage: ''
+    })
+  }
+
+  handleEmptySubmit = (e) => {
+    e.preventDefault()
+    this.setState({
+      errorMessage: 'Please enter todo name'
+    })
+  }
+
+  updateCurrentTodo = (e) => {
     this.setState({
       currentTodo: e.target.value
     })
   }
 
   render() {
+    const submitHandler = this.state.currentTodo ? this.submitCurrentTodo : this.handleEmptySubmit
     return (
       <div className="App">
         <div className="App-header">
@@ -33,8 +61,9 @@ class App extends Component {
           <h2>Todo App</h2>
         </div>
         <div className="Todo-App">
-          <TodoForm updateCurrentTodo={this.updateCurrentTodo} currentTodo={this.state.currentTodo} />
-          <TodoList todos={this.state.todos}/>
+          {this.state.errorMessage && <span className="error-message">{this.state.errorMessage}</span>}
+          <TodoForm updateCurrentTodo={this.updateCurrentTodo} currentTodo={this.state.currentTodo} submitCurrentTodo={submitHandler}/>
+          <TodoList handleToggle={this.handleToggle} todos={this.state.todos}/>
         </div>
       </div>
     );
