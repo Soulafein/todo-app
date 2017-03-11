@@ -3,9 +3,14 @@ import {partial} from '../../lib/utils'
 
 export const TodoItem = (props) => {
   const handleToggle = partial(props.handleToggle, props.id)
+  const handleRemove = partial(props.handleRemove, props.id)
   return (
     <li>
-      <input type="checkbox" onChange={handleToggle} checked={props.isCompleted} /> {props.name}
+      <input type="checkbox" onChange={handleToggle} checked={props.isCompleted} />
+      {props.name}
+      <span className="delete-item">
+        <a onClick={handleRemove}>X</a>
+      </span>
     </li>
   )
 }
