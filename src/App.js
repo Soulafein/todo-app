@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import {TodoForm} from './components/todo/TodoForm'
 import {TodoList} from './components/todo/TodoList'
+import {Footer} from './components/todo/Footer'
 import {addTodo, generateId, findById, toggleTodo, updateTodo, removeTodo} from './lib/todoHelpers'
 import {pipe, partial} from './lib/utils'
 
@@ -70,6 +71,7 @@ class App extends Component {
           {this.state.errorMessage && <span className="error-message">{this.state.errorMessage}</span>}
           <TodoForm updateCurrentTodo={this.updateCurrentTodo} currentTodo={this.state.currentTodo} submitCurrentTodo={submitHandler}/>
           <TodoList handleToggle={this.handleToggle} handleRemove={this.handleRemove} todos={this.state.todos}/>
+          <Footer />
         </div>
       </div>
     );
