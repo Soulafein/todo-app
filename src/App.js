@@ -6,7 +6,7 @@ import {TodoList} from './components/todo/TodoList'
 import {Footer} from './components/todo/Footer'
 import {addTodo, generateId, findById, toggleTodo, updateTodo, removeTodo, filterTodos} from './lib/todoHelpers'
 import {pipe, partial} from './lib/utils'
-import {loadTodos, createTodo} from './lib/todoService'
+import {loadTodos, createTodo, saveTodo, deleteTodo} from './lib/todoService'
 
 class App extends Component {
   state = {
@@ -27,12 +27,18 @@ class App extends Component {
     e.preventDefault()
     const updatedTodos = removeTodo(this.state.todos, id)
     this.setState({todos: updatedTodos})
+    deleteTodo(id)
+      .then(() => this.showTempMessage('Todo deleted'))
   }
 
   handleToggle = (id) => {
-    const getUpdatedTodos = pipe(findById, toggleTodo, partial(updateTodo, this.state.todos))
-    const updatedTodos = getUpdatedTodos(id, this.state.todos)
+    const getToggledTodo = pipe(findById, toggleTodo)
+    const updated = getToggledTodo(id, this.state.todos)
+    const getUpdatedTodos = partial(updateTodo, this.state.todos)
+    const updatedTodos = getUpdatedTodos(updated)
     this.setState({todos: updatedTodos})
+    saveTodo(updated)
+      .then(() => this.showTempMessage('Todo updated'))
   }
 
   submitCurrentTodo = (e) => {
@@ -50,7 +56,12 @@ class App extends Component {
       errorMessage: ''
     })
     createTodo(newTodo)
-      .then(() => console.log('Todo added'))
+      .then(() => this.showTempMessage('Todo added'))
+  }
+
+  showTempMessage = (msg) => {
+    this.setState({message: msg})
+    setTimeout(() => this.setState({message: ''}), 5000)
   }
 
   handleEmptySubmit = (e) => {
@@ -77,6 +88,7 @@ class App extends Component {
         </div>
         <div className="Todo-App">
           {this.state.errorMessage && <span className="error-message">{this.state.errorMessage}</span>}
+          {this.state.message && <span className="success-message">{this.state.message}</span>}
           <TodoForm updateCurrentTodo={this.updateCurrentTodo} currentTodo={this.state.currentTodo} submitCurrentTodo={submitHandler}/>
           <TodoList handleToggle={this.handleToggle} handleRemove={this.handleRemove} todos={displayTodos}/>
           <Footer />
