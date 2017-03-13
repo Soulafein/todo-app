@@ -6,20 +6,21 @@ import {TodoList} from './components/todo/TodoList'
 import {Footer} from './components/todo/Footer'
 import {addTodo, generateId, findById, toggleTodo, updateTodo, removeTodo, filterTodos} from './lib/todoHelpers'
 import {pipe, partial} from './lib/utils'
+import {loadTodos, createTodo} from './lib/todoService'
 
 class App extends Component {
   state = {
-    todos: [
-      {id: 1, name: 'Start running twice a week', isCompleted: false},
-      {id: 2, name: 'Start hiking at least once a month', isCompleted: false},
-      {id: 3, name: 'Ride on bike 400km per month', isCompleted: false},
-      {id: 4, name: 'Read a book every week', isCompleted: false}
-    ],
+    todos: [],
     currentTodo: ''
   }
 
   static contextTypes = {
     route: React.PropTypes.string
+  }
+
+  componentDidMount() {
+    loadTodos()
+      .then(todos => this.setState({todos}))
   }
 
   handleRemove = (id, e) => {
@@ -48,6 +49,8 @@ class App extends Component {
       currentTodo: '',
       errorMessage: ''
     })
+    createTodo(newTodo)
+      .then(() => console.log('Todo added'))
   }
 
   handleEmptySubmit = (e) => {
